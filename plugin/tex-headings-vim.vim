@@ -1,6 +1,10 @@
 let s:header_order = ['part', 'section', 'subsection', 'subsubsection', 'paragraph']
 let s:header_labels = ['prt', 'sec', 'sub', 'ssub', 'par']
 
+" 1 -> Replace references regardless
+" 2 -> Replace references with choice
+let g:tex_headings_update_refs = 0
+
 function! s:HeaderToLabel(header)
   return get(s:header_labels, index(s:header_order, a:header))
 endfunction
@@ -69,19 +73,39 @@ function! s:GetCurrentSectionHeaderLine(lnum)
   return -1
 endfunction
 
+function! s:UpdateReferences(old_label, new_label, name)
+  let search_term = '\<' . a:old_label . ':' . a:name . '\>'
+  let replace_term = a:new_label . ':' . a:name
+  if g:tex_headings_update_refs != 0
+    if g:tex_headings_update_refs == 1
+      let modifiers = 'g'
+    elseif g:tex_headings_update_refs == 2
+      let modifiers = 'gc'
+    endif
+    exec '%substitute/' . search_term . '/' . replace_term . '/' . modifiers
+  endif
+endfunction
+
 " Change the header at line a:lnum to a:header_type, if there
 " is a header at that position.
 function! s:SetHeader(lnum, header_type)
   let curr = getline(a:lnum)
   let new_header = substitute(curr, '\v^\\\w+(\{.*\})', '\\' . a:header_type . '\1', '')
   call setline(a:lnum, new_header)
-  call s:SetLabel(a:lnum + 1, s:HeaderToLabel(a:header_type))
 endfunction
 
-function! s:SetLabel(lnum, label_type)
+function! s:UpdateLabel(lnum, old_label_type, new_label_type)
   let curr = getline(a:lnum)
-  let new_label = substitute(curr, '\v^\\label\{.*:(.*)\}', '\\label\{' . a:label_type . ':\1\}', '')
+  let name = matchstr(
+        \ curr,
+        \ '\v\\label\{' . a:old_label_type . ':\zs.*\ze\}')
+  echom "Name is: " . name
+  let new_label = substitute(
+        \ curr,
+        \ '\v^\\label\{' . a:old_label_type . ':(.*)\}',
+        \ '\\label\{' . a:new_label_type . ':\1\}', '')
   call setline(a:lnum, new_label)
+  call s:UpdateReferences(a:old_label_type, a:new_label_type, name)
 endfunction
 
 function! s:TexChangeHeader(lnum, type)
@@ -103,7 +127,10 @@ function! s:TexChangeHeader(lnum, type)
     echom "No " . a:type . " header than " . curr_header_type
     return -1
   endif
+  let old_label = s:HeaderToLabel(curr_header_type)
+  let new_label = s:HeaderToLabel(new_header_type)
   call s:SetHeader(header_line, new_header_type)
+  call s:UpdateLabel(header_line + 1, old_label, new_label)
 endfunction
 
 function! TeXHeaderHigher(...)
