@@ -95,6 +95,7 @@ function! s:UpdateReferences(old_label, new_label, name)
       let modifiers = 'gc'
     endif
     exec '%substitute/' . search_term . '/' . replace_term . '/' . modifiers
+    normal! ''
   endif
 endfunction
 
@@ -111,7 +112,6 @@ function! s:UpdateLabel(lnum, old_label_type, new_label_type)
   let name = matchstr(
         \ curr,
         \ '\v\\label\{' . a:old_label_type . ':\zs.*\ze\}')
-  echom "Name is: " . name
   let new_label = substitute(
         \ curr,
         \ '\v^\\label\{' . a:old_label_type . ':(.*)\}',
