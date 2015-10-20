@@ -13,7 +13,9 @@ let s:header_labels = ['prt', 'sec', 'sub', 'ssub', 'par']
 
 " 1 -> Replace references regardless
 " 2 -> Replace references with choice
-let g:tex_headings_update_refs = 0
+if !exists("g:tex_headings_update_refs")
+  let g:tex_headings_update_refs = 0
+endif
 
 function! s:HeaderToLabel(header)
   return get(s:header_labels, index(s:header_order, a:header))
