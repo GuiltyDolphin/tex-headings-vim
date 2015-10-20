@@ -1,3 +1,13 @@
+" File: tex-headings.vim
+" Author: GuiltyDolphin (Ben Moon)
+" Description: Plugin for changing (La)TeX section headers.
+" License: GNU GPL version 3
+
+if exists("g:loaded_tex_headings")
+  finish
+endif
+let g:loaded_tex_headings = 1
+
 let s:header_order = ['part', 'section', 'subsection', 'subsubsection', 'paragraph']
 let s:header_labels = ['prt', 'sec', 'sub', 'ssub', 'par']
 
