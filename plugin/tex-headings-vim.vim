@@ -106,10 +106,20 @@ function! s:TexChangeHeader(lnum, type)
   call s:SetHeader(header_line, new_header_type)
 endfunction
 
-function! TeXHeaderHigher(lnum)
-  call s:TexChangeHeader(a:lnum, 'higher')
+function! TeXHeaderHigher(...)
+  if a:0 == 0
+    let lnum = line('.')
+  else
+    let lnum = a:1
+  endif
+  call s:TexChangeHeader(lnum, 'higher')
 endfunction
 
-function! TeXHeaderLower(lnum)
-  call s:TexChangeHeader(a:lnum, 'lower')
+function! TeXHeaderLower(...)
+  if a:0 == 0
+    let lnum = line('.')
+  else
+    let lnum = a:1
+  endif
+  call s:TexChangeHeader(lnum, 'lower')
 endfunction
