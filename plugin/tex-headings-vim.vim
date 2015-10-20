@@ -5,18 +5,43 @@ function! s:HeaderToLabel(header)
   return get(s:header_labels, index(s:header_order, a:header))
 endfunction
 
-function! s:GetHigherHeaderType(header_type)
-  let idx = index(s:header_order, a:header_type)
-  if idx == 0
-    return -1
-  endif
-  return get(s:header_order, idx - 1)
+
+function! s:IsHighestHeader(header)
+  return index(s:header_order, a:header) == 0
 endfunction
 
+function! s:IsLowestHeader(header)
+  return index(s:header_order, a:header) == len(s:header_order) - 1
+endfunction
+
+function! s:GetHigherHeaderType(header_type)
+  if s:IsHighestHeader(a:header_type)
+    return -1
+  else
+    let idx = index(s:header_order, a:header_type)
+    return get(s:header_order, idx - 1)
+  endif
+endfunction
+
+function! s:GetLowerHeaderType(header_type)
+  if s:IsLowestHeader(a:header_type)
+    return -1
+  else
+    let idx = index(s:header_order, a:header_type)
+    return get(s:header_order, idx + 1)
+  endif
+endfunction
+
+function! s:GetHeaderRegex(header_type)
+  return '\v^\\' . a:header_type . '\{.*\}'
+endfunction
+
+" Return 1 if the line starts with a valid TeX section header,
+" 0 otherwise.
 function! s:MatchesSection(lnum)
   let curr_line = getline(a:lnum)
   for header in s:header_order
-    if curr_line =~ '\v^\\' . header . '\{.*\}'
+    if curr_line =~ s:GetHeaderRegex(header)
       return 1
     endif
   endfor
@@ -25,7 +50,7 @@ endfunction
 
 function! s:GetHeaderType(line_conts)
   for header in s:header_order
-    if a:line_conts =~ '\v^\\' . header . '\{.*\}'
+    if a:line_conts =~ s:GetHeaderRegex(header)
       return header
     endif
   endfor
@@ -35,7 +60,7 @@ endfunction
 " Get the line number of the current section header.
 function! s:GetCurrentSectionHeaderLine(lnum)
   let lineno = a:lnum
-  while lineno > 1
+  while lineno > 0
     if s:MatchesSection(lineno)
       return lineno
     endif
@@ -59,7 +84,7 @@ function! s:SetLabel(lnum, label_type)
   call setline(a:lnum, new_label)
 endfunction
 
-function! HeaderUp(lnum)
+function! s:TexChangeHeader(lnum, type)
   let header_line = s:GetCurrentSectionHeaderLine(a:lnum)
   if header_line == -1
     echom "No header found"
@@ -67,10 +92,24 @@ function! HeaderUp(lnum)
   endif
   let curr_header = getline(header_line)
   let curr_header_type = s:GetHeaderType(curr_header)
-  let new_header_type = s:GetHigherHeaderType(curr_header_type)
+
+  if a:type =~ 'higher'
+    let new_header_type = s:GetHigherHeaderType(curr_header_type)
+  elseif a:type =~ 'lower'
+    let new_header_type = s:GetLowerHeaderType(curr_header_type)
+  endif
+
   if new_header_type == -1
-    echom "No higher header than " . curr_header_type
+    echom "No " . a:type . " header than " . curr_header_type
     return -1
   endif
   call s:SetHeader(header_line, new_header_type)
+endfunction
+
+function! TeXHeaderHigher(lnum)
+  call s:TexChangeHeader(a:lnum, 'higher')
+endfunction
+
+function! TeXHeaderLower(lnum)
+  call s:TexChangeHeader(a:lnum, 'lower')
 endfunction
