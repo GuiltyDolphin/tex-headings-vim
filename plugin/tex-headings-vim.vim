@@ -5,7 +5,7 @@ function! s:HeaderToLabel(header)
   return get(s:header_labels, index(s:header_order, a:header))
 endfunction
 
-function! s:GetNextHeaderType(header_type)
+function! s:GetHigherHeaderType(header_type)
   let idx = index(s:header_order, a:header_type)
   if idx == 0
     return -1
@@ -25,16 +25,17 @@ endfunction
 
 function! s:GetHeaderType(line_conts)
   for header in s:header_order
-    if header =~ '\v^\\' . header . '\{.*\}'
+    if a:line_conts =~ '\v^\\' . header . '\{.*\}'
       return header
     endif
   endfor
   return -1
 endfunction
 
+" Get the line number of the current section header.
 function! s:GetCurrentSectionHeaderLine(lnum)
   let lineno = a:lnum
-  while lineno > 0
+  while lineno > 1
     if s:MatchesSection(lineno)
       return lineno
     endif
@@ -43,9 +44,11 @@ function! s:GetCurrentSectionHeaderLine(lnum)
   return -1
 endfunction
 
+" Change the header at line a:lnum to a:header_type, if there
+" is a header at that position.
 function! s:SetHeader(lnum, header_type)
   let curr = getline(a:lnum)
-  let new_header = substitute(curr, '\v^\\.*(\{.*\})', '\\' . a:header_type . '\1', '')
+  let new_header = substitute(curr, '\v^\\\w+(\{.*\})', '\\' . a:header_type . '\1', '')
   call setline(a:lnum, new_header)
   call s:SetLabel(a:lnum + 1, s:HeaderToLabel(a:header_type))
 endfunction
@@ -59,17 +62,15 @@ endfunction
 function! HeaderUp(lnum)
   let header_line = s:GetCurrentSectionHeaderLine(a:lnum)
   if header_line == -1
-    echom "Not in a section"
+    echom "No header found"
     return -1
   endif
   let curr_header = getline(header_line)
   let curr_header_type = s:GetHeaderType(curr_header)
-  let new_header_type = s:GetNextHeaderType(curr_header)
+  let new_header_type = s:GetHigherHeaderType(curr_header_type)
   if new_header_type == -1
     echom "No higher header than " . curr_header_type
     return -1
   endif
-  " call(function('s:SetHeader'), [header_line, new_header_type])
   call s:SetHeader(header_line, new_header_type)
-  " call(function('s:SetHeader'), [header_line new_header_type])
 endfunction
