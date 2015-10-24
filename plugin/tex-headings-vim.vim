@@ -90,9 +90,9 @@ function! s:UpdateReferences(old_label, new_label, name)
   let replace_term = a:new_label . ':' . a:name
   if g:tex_headings_update_refs != 0
     if g:tex_headings_update_refs == 1
-      let modifiers = 'g'
+      let modifiers = 'ge'
     elseif g:tex_headings_update_refs == 2
-      let modifiers = 'gc'
+      let modifiers = 'gce'
     endif
     exec '%substitute/' . search_term . '/' . replace_term . '/' . modifiers
     normal! ''
