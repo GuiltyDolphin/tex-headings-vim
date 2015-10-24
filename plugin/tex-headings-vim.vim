@@ -94,8 +94,9 @@ function! s:UpdateReferences(old_label, new_label, name)
     elseif g:tex_headings_update_refs == 2
       let modifiers = 'gce'
     endif
+    let save_cursor = getcurpos()
     exec '%substitute/' . search_term . '/' . replace_term . '/' . modifiers
-    normal! ''
+    call setpos('.', save_cursor)
   endif
 endfunction
 
