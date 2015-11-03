@@ -17,19 +17,22 @@ if !exists("g:tex_headings_update_refs")
   let g:tex_headings_update_refs = 0
 endif
 
+" Get the common label used for a particular header.
 function! s:HeaderToLabel(header)
   return get(s:header_labels, index(s:header_order, a:header))
 endfunction
 
-
+" Returns nonzero if there are no higher headers than that given.
 function! s:IsHighestHeader(header)
   return index(s:header_order, a:header) == 0
 endfunction
 
+" Returns nonzero if there are no lower headers than that given.
 function! s:IsLowestHeader(header)
   return index(s:header_order, a:header) == len(s:header_order) - 1
 endfunction
 
+" Return the nex highest header, if any.
 function! s:GetHigherHeaderType(header_type)
   if s:IsHighestHeader(a:header_type)
     return -1
@@ -39,6 +42,7 @@ function! s:GetHigherHeaderType(header_type)
   endif
 endfunction
 
+" Return the next lowest header, if any.
 function! s:GetLowerHeaderType(header_type)
   if s:IsLowestHeader(a:header_type)
     return -1
@@ -48,6 +52,7 @@ function! s:GetLowerHeaderType(header_type)
   endif
 endfunction
 
+" Generate a regular expression for matching a particular header.
 function! s:GetHeaderRegex(header_type)
   return '\v^\\' . a:header_type . '\{.*\}'
 endfunction
@@ -64,6 +69,7 @@ function! s:MatchesSection(lnum)
   return 0
 endfunction
 
+" Determine the header type of a particular line.
 function! s:GetHeaderType(line_conts)
   for header in s:header_order
     if a:line_conts =~ s:GetHeaderRegex(header)
@@ -85,6 +91,7 @@ function! s:GetCurrentSectionHeaderLine(lnum)
   return -1
 endfunction
 
+" Update any references to a label that has changed.
 function! s:UpdateReferences(old_label, new_label, name)
   let search_term = '\<' . a:old_label . ':' . a:name . '\>'
   let replace_term = a:new_label . ':' . a:name
@@ -108,6 +115,7 @@ function! s:SetHeader(lnum, header_type)
   call setline(a:lnum, new_header)
 endfunction
 
+" Change the header label at a particular line.
 function! s:UpdateLabel(lnum, old_label_type, new_label_type)
   let curr = getline(a:lnum)
   let name = matchstr(
@@ -121,6 +129,7 @@ function! s:UpdateLabel(lnum, old_label_type, new_label_type)
   call s:UpdateReferences(a:old_label_type, a:new_label_type, name)
 endfunction
 
+" Change a TeX header on a given line.
 function! s:TexChangeHeader(lnum, type)
   let header_line = s:GetCurrentSectionHeaderLine(a:lnum)
   if header_line == -1
@@ -146,6 +155,7 @@ function! s:TexChangeHeader(lnum, type)
   call s:UpdateLabel(header_line + 1, old_label, new_label)
 endfunction
 
+" Set the current TeX header to the next highest header.
 function! TeXHeaderHigher(...)
   if a:0 == 0
     let lnum = line('.')
@@ -155,6 +165,7 @@ function! TeXHeaderHigher(...)
   call s:TexChangeHeader(lnum, 'higher')
 endfunction
 
+" Set the current TeX header to the next lowest header.
 function! TeXHeaderLower(...)
   if a:0 == 0
     let lnum = line('.')
