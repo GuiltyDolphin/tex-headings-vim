@@ -8,8 +8,8 @@ if exists("g:loaded_tex_headings")
 endif
 let g:loaded_tex_headings = 1
 
-let s:header_order = ['part', 'section', 'subsection', 'subsubsection', 'paragraph']
-let s:header_labels = ['prt', 'sec', 'sub', 'ssub', 'par']
+let s:header_order = ['part', 'section', 'subsection', 'subsubsection', 'paragraph', 'subparagraph']
+let s:header_labels = ['prt', 'sec', 'sub', 'ssub', 'par', 'par']
 
 " 1 -> Replace references regardless
 " 2 -> Replace references with choice
