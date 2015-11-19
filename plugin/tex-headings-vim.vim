@@ -35,7 +35,7 @@ endfunction
 " Return the nex highest header, if any.
 function! s:GetHigherHeaderType(header_type)
   if s:IsHighestHeader(a:header_type)
-    return -1
+    return ''
   else
     let idx = index(s:header_order, a:header_type)
     return get(s:header_order, idx - 1)
@@ -45,7 +45,7 @@ endfunction
 " Return the next lowest header, if any.
 function! s:GetLowerHeaderType(header_type)
   if s:IsLowestHeader(a:header_type)
-    return -1
+    return ''
   else
     let idx = index(s:header_order, a:header_type)
     return get(s:header_order, idx + 1)
@@ -66,7 +66,6 @@ function! s:MatchesSection(lnum)
       return 1
     endif
   endfor
-  return 0
 endfunction
 
 " Determine the header type of a particular line.
@@ -76,7 +75,6 @@ function! s:GetHeaderType(line_conts)
       return header
     endif
   endfor
-  return -1
 endfunction
 
 " Get the line number of the current section header.
@@ -134,7 +132,7 @@ function! s:TexChangeHeader(lnum, type)
   let header_line = s:GetCurrentSectionHeaderLine(a:lnum)
   if header_line == -1
     echom "No header found"
-    return -1
+    return
   endif
   let curr_header = getline(header_line)
   let curr_header_type = s:GetHeaderType(curr_header)
@@ -145,9 +143,9 @@ function! s:TexChangeHeader(lnum, type)
     let new_header_type = s:GetLowerHeaderType(curr_header_type)
   endif
 
-  if new_header_type == -1
+  if empty(new_header_type)
     echom "No " . a:type . " header than " . curr_header_type
-    return -1
+    return
   endif
   let old_label = s:HeaderToLabel(curr_header_type)
   let new_label = s:HeaderToLabel(new_header_type)
